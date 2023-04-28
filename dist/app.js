@@ -1,0 +1,20 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.app = void 0;
+require('dotenv').config();
+require('./db');
+const express_1 = __importDefault(require("express"));
+exports.app = (0, express_1.default)();
+require('./config')(exports.app);
+exports.app.use('/auth', require('./routes/auth.routes'));
+exports.app.use('/api', require('./routes/user.routes'));
+exports.app.use('/api', require('./routes/index.routes'));
+exports.app.use('/api', require('./routes/report.routes'));
+exports.app.use('/api', require('./routes/article.routes'));
+exports.app.use('/api', require('./routes/comment.routes'));
+exports.app.use('/api', require('./routes/message.routes'));
+exports.app.use('/api', require('./routes/following.routes'));
+require('./error-handling')(exports.app);
