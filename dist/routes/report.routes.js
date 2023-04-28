@@ -14,9 +14,19 @@ const Report = require('../models/Report.model');
 router.post('/report', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id, content } = req.body;
-        console.log(id);
         yield Report.create({ id, content });
         res.status(200).json({ message: 'Report submitted. Thank you for making this website a better place.' });
+    }
+    catch (err) {
+        res.status(500).json({ message: 'Something went wrong. Please try again later.' });
+    }
+}));
+router.post('/contact', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id, content, subject } = req.body;
+    console.log(req.body);
+    try {
+        yield Report.create({ id, content, subject });
+        res.status(200).json({ message: 'Form submitted.' });
     }
     catch (err) {
         res.status(500).json({ message: 'Something went wrong. Please try again later.' });

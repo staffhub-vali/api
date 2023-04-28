@@ -9,7 +9,7 @@ require('./db')
 // https://www.npmjs.com/package/express
 import express from 'express'
 
-export const app = express()
+const app = express()
 
 // ℹ️ This function is getting exported from the config folder. It runs most pieces of middleware
 require('./config')(app)
@@ -27,3 +27,5 @@ app.use('/api', require('./routes/message.routes'))
 app.use('/api', require('./routes/following.routes'))
 // ❗ To handle errors. Routes that don't exist or errors that you handle in specific routes
 require('./error-handling')(app)
+
+export default app

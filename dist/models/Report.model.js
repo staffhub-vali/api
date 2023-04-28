@@ -16,11 +16,18 @@ const reportSchema = new mongoose_1.Schema({
                 type: mongoose_1.Schema.Types.ObjectId,
                 ref: 'Conversation',
             },
+            {
+                type: mongoose_1.Schema.Types.ObjectId,
+                ref: 'User',
+            },
         ],
     },
     content: {
         type: String,
         required: true,
+    },
+    subject: {
+        type: String,
     },
 }, {
     timestamps: true,
