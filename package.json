@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node dist/server.js",
+    "start": "ts-node --transpile-only dist/server.js",
     "dev": "nodemon server.ts",
     "build": "tsc"
   },

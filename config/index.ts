@@ -24,7 +24,7 @@ module.exports = (app: { set: (arg0: string, arg1: number) => void; use: (arg0: 
 	// controls a very specific header to pass headers from the frontend
 	app.use(
 		cors({
-			origin: [FRONTEND_URL, 'http://localhost:3000'],
+			origin: [FRONTEND_URL, 'http://localhost:3001'],
 		}),
 	)
 
