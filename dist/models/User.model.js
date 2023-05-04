@@ -2,72 +2,29 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
 const userSchema = new mongoose_1.Schema({
-    firstName: {
+    name: {
         type: String,
-        required: [true, 'First name is required.'],
-    },
-    lastName: {
-        type: String,
-        required: [true, 'Last name is required.'],
+        required: [true, 'Name is required'],
     },
     username: {
         type: String,
+        unique: true,
+        lowercase: true,
         required: [true, 'Username is required'],
     },
     email: {
         type: String,
-        required: [true, 'Email is required.'],
+        trim: true,
         unique: true,
         lowercase: true,
-        trim: true,
+        required: [true, 'Email is required.'],
     },
     password: {
         type: String,
         required: [true, 'Password is required.'],
     },
-    description: {
-        type: String,
-    },
-    profilePicture: {
-        type: String,
-        default: 'https://i.pinimg.com/originals/e5/9e/51/e59e51dcbba47985a013544769015f25.jpg',
-    },
-    location: {
-        type: Object,
-    },
-    profession: {
-        type: String,
-    },
-    articles: {
-        type: [mongoose_1.Schema.Types.ObjectId],
-        ref: 'Article',
-    },
-    comments: {
-        type: [mongoose_1.Schema.Types.ObjectId],
-        ref: 'Comment',
-    },
-    conversations: {
-        type: [mongoose_1.Schema.Types.ObjectId],
-        ref: 'Conversation',
-    },
-    events: {
-        type: [mongoose_1.Schema.Types.ObjectId],
-        ref: 'Event',
-    },
-    followers: {
-        type: [mongoose_1.Schema.Types.ObjectId],
-        ref: 'User',
-    },
-    following: {
-        type: [mongoose_1.Schema.Types.ObjectId],
-        ref: 'User',
-    },
-    isAdmin: {
-        type: Boolean,
-        default: false,
-    },
 }, {
     timestamps: true,
 });
 const User = (0, mongoose_1.model)('User', userSchema);
-module.exports = User;
+exports.default = User;

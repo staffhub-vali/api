@@ -2,69 +2,26 @@ import { Schema, model } from 'mongoose'
 
 const userSchema = new Schema(
 	{
-		firstName: {
+		name: {
 			type: String,
-			required: [true, 'First name is required.'],
-		},
-		lastName: {
-			type: String,
-			required: [true, 'Last name is required.'],
+			required: [true, 'Name is required'],
 		},
 		username: {
 			type: String,
+			unique: true,
+			lowercase: true,
 			required: [true, 'Username is required'],
 		},
 		email: {
 			type: String,
-			required: [true, 'Email is required.'],
+			trim: true,
 			unique: true,
 			lowercase: true,
-			trim: true,
+			required: [true, 'Email is required.'],
 		},
 		password: {
 			type: String,
 			required: [true, 'Password is required.'],
-		},
-		description: {
-			type: String,
-		},
-		profilePicture: {
-			type: String,
-			default: 'https://i.pinimg.com/originals/e5/9e/51/e59e51dcbba47985a013544769015f25.jpg',
-		},
-		location: {
-			type: Object,
-		},
-		profession: {
-			type: String,
-		},
-		articles: {
-			type: [Schema.Types.ObjectId],
-			ref: 'Article',
-		},
-		comments: {
-			type: [Schema.Types.ObjectId],
-			ref: 'Comment',
-		},
-		conversations: {
-			type: [Schema.Types.ObjectId],
-			ref: 'Conversation',
-		},
-		events: {
-			type: [Schema.Types.ObjectId],
-			ref: 'Event',
-		},
-		followers: {
-			type: [Schema.Types.ObjectId],
-			ref: 'User',
-		},
-		following: {
-			type: [Schema.Types.ObjectId],
-			ref: 'User',
-		},
-		isAdmin: {
-			type: Boolean,
-			default: false,
 		},
 	},
 	{
@@ -74,4 +31,4 @@ const userSchema = new Schema(
 
 const User = model('User', userSchema)
 
-module.exports = User
+export default User
