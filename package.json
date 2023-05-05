@@ -1,8 +1,8 @@
 {
   "name": "valylauncher",
   "type": "commonjs",
-  "version": "0.0.0",
-  "private": true,
+  "version": "1.0.0",
+  "bin": "./bin/cli.js",
   "scripts": {
     "start": "node dist/server.js",
     "dev": "nodemon /server.ts",
