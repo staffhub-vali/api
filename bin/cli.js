@@ -59,7 +59,6 @@ function cloneAndInstall(repoName) {
 		process.exit(1)
 	}
 	console.clear()
-	console.log(`${YELLOW}Done! Now do the following to start development:${RESET}`)
+	console.log(`${ORANGE}Done! Now do the following to start development:${RESET}`)
 	console.log(`${CYAN}cd ${repoName} && npm run dev${RESET}`)
-	console.log(`${MAGENTA}Dont forget to add .env back into .gitignore${RESET}`)
 }
