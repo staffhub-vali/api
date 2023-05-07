@@ -1,11 +1,10 @@
 import mongoose from 'mongoose'
 
 const ShiftSchema = new mongoose.Schema({
-	start: { type: Date, required: true },
 	end: { type: Date, required: true },
-	location: { type: String, required: true },
-	employees: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Employee' }],
-	schedule: { type: mongoose.Schema.Types.ObjectId, ref: 'Schedule' },
+	start: { type: Date, required: true },
+	employee: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee' },
+	workingDay: { type: mongoose.Schema.Types.ObjectId, ref: 'WorkingDay' },
 })
 
 const Shift = mongoose.model('Shift', ShiftSchema)
