@@ -18,6 +18,7 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 
 app.use('/v1/auth', require('./routes/auth.routes'))
+app.use('/v1/employees', require('./routes/employees.routes'))
 
 app.listen(PORT, () => {
 	console.log(`Server listing on port ${PORT}.`)
