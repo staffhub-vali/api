@@ -1,19 +1,15 @@
 import mongoose from 'mongoose'
 
-interface EmployeeDocument extends mongoose.Document {
-	name: string
-	email: string
-	phone?: string
-	shifts: string[]
-}
-
 const EmployeeSchema = new mongoose.Schema({
 	name: { type: String, required: true },
+	phone: { type: String, required: true },
 	email: { type: String, required: true, unique: true },
-	phone: { type: String },
 	shifts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Shift' }],
+	vacationDays: { type: Number, default: 25 },
+	onVacation: { type: Boolean, default: false },
+	onSickLeave: { type: Boolean, default: false },
 })
 
-const Employee = mongoose.model<EmployeeDocument>('Employee', EmployeeSchema)
+const Employee = mongoose.model('Employee', EmployeeSchema)
 
 export default Employee
