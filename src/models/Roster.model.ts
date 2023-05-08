@@ -1,9 +1,9 @@
 import mongoose from 'mongoose'
 
 const rosterSchema = new mongoose.Schema({
-	employee: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee', required: true },
 	month: { type: String, required: true },
-	workingDays: [{ type: mongoose.Schema.Types.ObjectId, ref: 'WorkingDay' }],
+	shifts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Shift' }],
+	employee: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee', required: true },
 })
 
 const Roster = mongoose.model('Roster', rosterSchema)

@@ -1,8 +1,8 @@
 import mongoose from 'mongoose'
 
 const shiftSchema = new mongoose.Schema({
-	start: { type: String },
 	end: { type: String },
+	start: { type: String },
 	employee: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee' },
 	workingDay: { type: mongoose.Schema.Types.ObjectId, ref: 'WorkingDay' },
 })
