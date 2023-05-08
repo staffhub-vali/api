@@ -19,6 +19,7 @@ app.use(express.urlencoded({ extended: false }))
 
 app.use('/v1/auth', require('./routes/auth.routes'))
 app.use('/v1/roster', require('./routes/roster.routes'))
+app.use('/v1/schedules', require('./routes/schedule.routes'))
 app.use('/v1/employees', require('./routes/employees.routes'))
 
 app.listen(PORT, () => {
