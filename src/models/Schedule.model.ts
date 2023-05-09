@@ -2,7 +2,7 @@ import mongoose from 'mongoose'
 
 const scheduleSchema = new mongoose.Schema({
 	month: { type: String, required: true },
-	workingDays: [{ type: mongoose.Schema.Types.ObjectId, ref: 'WorkingDay' }],
+	workDays: [{ type: mongoose.Schema.Types.ObjectId, ref: 'WorkDay' }],
 })
 
 const Schedule = mongoose.model('Schedule', scheduleSchema)

@@ -3,7 +3,7 @@ import Shift from '../models/Shift.model'
 import Roster from '../models/Roster.model'
 import Employee from '../models/Employee.model'
 import Schedule from '../models/Schedule.model'
-import WorkingDay from '../models/WorkingDay.model'
+import WorkDay from '../models/WorkDay.model'
 import { Authenticate } from '../middleware/jwt.middleware'
 
 const router = express.Router()
@@ -29,14 +29,14 @@ router.post('/', Authenticate, async (req: Request, res: Response) => {
 		const roster = await Roster.create({ employee, month })
 
 		for (const { date, start, end } of data) {
-			let workingDay = await WorkingDay.findOne({ date: date })
+			let workDay = await WorkDay.findOne({ date: date })
 
-			if (!workingDay) {
-				workingDay = await WorkingDay.create({ date: date })
-				await workingDay.save()
+			if (!workDay) {
+				workDay = await WorkDay.create({ date: date })
+				await workDay.save()
 			}
 
-			schedule.workingDays.push(workingDay._id)
+			schedule.workDays.push(workDay._id)
 
 			if (!start || !end) {
 				continue
@@ -46,11 +46,11 @@ router.post('/', Authenticate, async (req: Request, res: Response) => {
 				start,
 				end,
 				employee,
-				workingDay,
+				workDay,
 			})
 
-			workingDay.shifts.push(shift._id)
-			await Promise.all([shift.save(), workingDay.save()])
+			workDay.shifts.push(shift._id)
+			await Promise.all([shift.save(), workDay.save()])
 			roster.shifts.push(shift._id)
 		}
 

@@ -16,7 +16,7 @@ router.get('/', Authenticate, async (req, res) => {
 
 router.get('/:id', Authenticate, async (req, res) => {
 	try {
-		const schedule = await Schedule.findById(req.params.id)
+		const schedule = await Schedule.findById(req.params.id).populate('workDays')
 		res.status(200).json(schedule)
 	} catch (error: any) {
 		console.log(error)
