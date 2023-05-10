@@ -65,4 +65,22 @@ router.post('/', Authenticate, async (req: Request, res: Response) => {
 	}
 })
 
+router.get('/:id', Authenticate, async (req: Request, res: Response) => {
+	try {
+		const roster = await Roster.findById(req.params.id).populate({
+			path: 'shifts',
+			populate: {
+				path: 'workDay',
+			},
+		})
+		if (!roster) {
+			return res.status(404).json({ message: 'Roster not found' })
+		}
+		return res.status(200).json(roster)
+	} catch (error) {
+		console.log(error)
+		res.status(500).json({ message: 'Server error' })
+	}
+})
+
 module.exports = router
