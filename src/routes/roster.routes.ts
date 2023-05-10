@@ -1,9 +1,9 @@
 import express, { Request, Response } from 'express'
 import Shift from '../models/Shift.model'
 import Roster from '../models/Roster.model'
+import WorkDay from '../models/WorkDay.model'
 import Employee from '../models/Employee.model'
 import Schedule from '../models/Schedule.model'
-import WorkDay from '../models/WorkDay.model'
 import { Authenticate } from '../middleware/jwt.middleware'
 
 const router = express.Router()
@@ -19,6 +19,11 @@ router.post('/', Authenticate, async (req: Request, res: Response) => {
 		}
 
 		const month = data[0].date.slice(3)
+
+		const existingRoster = await Roster.findOne({ employee: employee._id, month: month })
+		if (existingRoster) {
+			return res.status(400).json({ message: 'Employee already has a roster for the month' })
+		}
 
 		let schedule = await Schedule.findOne({ month: month })
 		if (!schedule) {
@@ -47,6 +52,7 @@ router.post('/', Authenticate, async (req: Request, res: Response) => {
 				end,
 				employee,
 				workDay,
+				roster,
 			})
 
 			workDay.shifts.push(shift._id)
