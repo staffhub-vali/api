@@ -6,7 +6,7 @@ const router = express.Router()
 
 router.get('/', Authenticate, async (req, res) => {
 	try {
-		const schedules = await Schedule.find()
+		const schedules = await Schedule.find().sort({ month: -1 })
 		res.status(200).json(schedules)
 	} catch (error: any) {
 		console.log(error)

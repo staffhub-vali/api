@@ -8,7 +8,7 @@ router
 	.route('/')
 	.get(Authenticate, async (req: Request, res: Response) => {
 		try {
-			const employees = await Employee.find()
+			const employees = await Employee.find().sort({ name: 'asc' })
 
 			return res.status(200).json(employees)
 		} catch (error) {
