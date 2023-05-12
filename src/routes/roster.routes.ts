@@ -107,11 +107,6 @@ router
 			for (const { date, start, end } of data) {
 				let workDay = await WorkDay.findOne({ date: date })
 
-				if (!workDay) {
-					workDay = await WorkDay.create({ date: date })
-					await workDay.save()
-				}
-
 				if (!start || !end) {
 					continue
 				}
@@ -124,12 +119,10 @@ router
 					roster,
 				})
 
-				workDay.shifts.push(shift._id)
-				await Promise.all([shift.save(), workDay.save()])
+				workDay?.shifts.push(shift._id)
+				await Promise.all([shift.save(), workDay?.save()])
 				roster.shifts.push(shift._id)
 			}
-
-			employee.rosters.push(roster._id)
 
 			await Promise.all([roster.save(), employee.save()])
 
@@ -143,15 +136,19 @@ router
 
 router.get('/:id', Authenticate, async (req: Request, res: Response) => {
 	try {
-		const roster = await Roster.findById(req.params.id).populate({
-			path: 'shifts',
-			populate: {
-				path: 'workDay',
-			},
-		})
+		const roster = await Roster.findById(req.params.id)
+			.populate({
+				path: 'shifts',
+				populate: {
+					path: 'workDay',
+				},
+			})
+			.populate('employee')
+
 		if (!roster) {
 			return res.status(404).json({ message: 'Roster not found' })
 		}
+
 		return res.status(200).json(roster)
 	} catch (error) {
 		console.log(error)
