@@ -132,7 +132,39 @@ router
 			console.log(error)
 		}
 	})
-	.delete(Authenticate, async (req: Request, res: Response) => {})
+	.delete(Authenticate, async (req: Request, res: Response) => {
+		const rosterId = req.query.id
+
+		const roster = await Roster.findById(rosterId).populate({
+			path: 'shifts',
+			populate: {
+				path: 'workDay',
+			},
+		})
+
+		if (!roster) {
+			return res.status(404).json({ message: 'Roster not found' })
+		}
+
+		const employee = await Employee.findById(roster.employee._id)
+
+		if (!employee) {
+			return res.status(404).json({ message: 'Employee not found' })
+		}
+
+		employee.rosters = employee.rosters.filter((roster) => roster.toString() !== rosterId)
+		await employee.save()
+
+		const shiftIds = roster.shifts.map((shift) => shift._id)
+
+		await WorkDay.updateMany({ shifts: { $in: shiftIds } }, { $pull: { shifts: { $in: shiftIds } } })
+
+		await Shift.deleteMany({ _id: { $in: shiftIds }, roster: roster._id })
+
+		await Roster.findByIdAndDelete(rosterId)
+
+		res.status(200).json({ message: 'Roster deleted successfully' })
+	})
 
 router.get('/:id', Authenticate, async (req: Request, res: Response) => {
 	try {
