@@ -43,7 +43,9 @@ router
 					await workDay.save()
 				}
 
-				schedule.workDays.push(workDay._id)
+				if (!schedule.workDays.includes(workDay._id)) {
+					schedule.workDays.push(workDay._id)
+				}
 
 				if (!start || !end) {
 					continue
