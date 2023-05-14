@@ -75,7 +75,7 @@ router.post('/login', async (req: Request, res: Response) => {
 
 			let expiresIn = '6h'
 			if (rememberMe) {
-				expiresIn = '256h'
+				expiresIn = '365d'
 			}
 
 			const TOKEN_SECRET: Secret | undefined = process.env.TOKEN_SECRET

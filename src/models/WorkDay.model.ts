@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
 
 const workDaySchema = new mongoose.Schema({
-	date: { type: String, required: true, unique: true },
+	date: { type: Date, required: true, unique: true },
 	shifts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Shift' }],
 })
 

@@ -20,7 +20,8 @@ router
 				return res.status(404).json({ message: 'Employee not found' })
 			}
 
-			const month = data[0].date.slice(3)
+			const date = new Date(data[0].date)
+			const month = date.getMonth()
 
 			const existingRoster = await Roster.findOne({ employee: employee._id, month: month })
 			if (existingRoster) {
@@ -36,10 +37,12 @@ router
 			const roster = await Roster.create({ employee, month })
 
 			for (const { date, start, end } of data) {
-				let workDay = await WorkDay.findOne({ date: date })
+				const dateObj = new Date(date)
+
+				let workDay = await WorkDay.findOne({ date: dateObj })
 
 				if (!workDay) {
-					workDay = await WorkDay.create({ date: date })
+					workDay = await WorkDay.create({ date: dateObj })
 					await workDay.save()
 				}
 
@@ -51,9 +54,12 @@ router
 					continue
 				}
 
+				const startTime = new Date(`1970-01-01T${start}:00Z`) // Convert the time to a Date object
+				const endTime = new Date(`1970-01-01T${end}:00Z`) // Convert the time to a Date object
+
 				const shift = await Shift.create({
-					start,
-					end,
+					start: startTime,
+					end: endTime,
 					employee,
 					workDay,
 					roster,
