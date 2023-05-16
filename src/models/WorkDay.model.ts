@@ -1,10 +1,15 @@
-import mongoose from 'mongoose'
+import mongoose, { Document, Schema, Model, Types } from 'mongoose'
 
-const workDaySchema = new mongoose.Schema({
-	date: { type: Date, required: true, unique: true },
+interface WorkDay extends Document {
+	date: number
+	shifts: Types.ObjectId[]
+}
+
+const workDaySchema: Schema<WorkDay> = new mongoose.Schema({
+	date: { type: Number, required: true, unique: true },
 	shifts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Shift' }],
 })
 
-const WorkDay = mongoose.model('WorkDay', workDaySchema)
+const WorkDay: Model<WorkDay> = mongoose.model<WorkDay>('WorkDay', workDaySchema)
 
 export default WorkDay

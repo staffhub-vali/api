@@ -20,8 +20,9 @@ router
 				return res.status(404).json({ message: 'Employee not found' })
 			}
 
-			const date = new Date(data[0].date)
-			const month = date.getMonth()
+			const date = new Date(data[0].date * 1000)
+			const year = date.getFullYear()
+			const month = parseInt((date.getMonth() + 1).toString().padStart(2, '0') + year.toString())
 
 			const existingRoster = await Roster.findOne({ employee: employee._id, month: month })
 			if (existingRoster) {
@@ -31,18 +32,15 @@ router
 			let schedule = await Schedule.findOne({ month: month })
 			if (!schedule) {
 				schedule = await Schedule.create({ month: month })
-				await schedule.save()
 			}
 
 			const roster = await Roster.create({ employee, month })
 
 			for (const { date, start, end } of data) {
-				const dateObj = new Date(date)
-
-				let workDay = await WorkDay.findOne({ date: dateObj })
+				let workDay = await WorkDay.findOne({ date: date })
 
 				if (!workDay) {
-					workDay = await WorkDay.create({ date: dateObj })
+					workDay = await WorkDay.create({ date: date })
 					await workDay.save()
 				}
 
@@ -54,12 +52,9 @@ router
 					continue
 				}
 
-				const startTime = new Date(`1970-01-01T${start}:00Z`) // Convert the time to a Date object
-				const endTime = new Date(`1970-01-01T${end}:00Z`) // Convert the time to a Date object
-
 				const shift = await Shift.create({
-					start: startTime,
-					end: endTime,
+					start,
+					end,
 					employee,
 					workDay,
 					roster,
@@ -74,6 +69,7 @@ router
 
 			await Promise.all([roster.save(), employee.save(), schedule.save()])
 
+			console.log('Roster Created')
 			return res.status(201).json(roster)
 		} catch (error) {
 			console.log(error)
