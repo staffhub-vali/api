@@ -1,191 +1,53 @@
+import User from '../models/User.model'
 import Shift from '../models/Shift.model'
-import Roster from '../models/Roster.model'
 import WorkDay from '../models/WorkDay.model'
 import Employee from '../models/Employee.model'
-import Schedule from '../models/Schedule.model'
 import express, { Request, Response } from 'express'
-import { Authenticate } from '../middleware/jwt.middleware'
+import { Authenticate, CustomRequest } from '../middleware/jwt.middleware'
 
 const router = express.Router()
 
-router
-	.route('/')
-	.post(Authenticate, async (req: Request, res: Response) => {
-		try {
-			const { id, data } = req.body
+router.route('/').post(Authenticate, async (req: CustomRequest, res: Response) => {
+	try {
+		const { id, data } = req.body
 
-			const employee = await Employee.findById(id)
+		const user = await User.findOne({ _id: req.token._id })
 
-			if (!employee) {
-				return res.status(404).json({ message: 'Employee not found' })
-			}
-
-			const date = new Date(data[0].date * 1000)
-			const year = date.getFullYear()
-			const month = parseInt((date.getMonth() + 1).toString().padStart(2, '0') + year.toString())
-
-			const existingRoster = await Roster.findOne({ employee: employee._id, month: month })
-			if (existingRoster) {
-				return res.status(400).json({ message: 'Employee already has a roster for the month' })
-			}
-
-			let schedule = await Schedule.findOne({ month: month })
-			if (!schedule) {
-				schedule = await Schedule.create({ month: month })
-			}
-
-			const roster = await Roster.create({ employee, month })
-
-			for (const { date, start, end } of data) {
-				let workDay = await WorkDay.findOne({ date: date })
-
-				if (!workDay) {
-					workDay = await WorkDay.create({ date: date })
-					await workDay.save()
-				}
-
-				if (!schedule.workDays.includes(workDay._id)) {
-					schedule.workDays.push(workDay._id)
-				}
-
-				if (!start || !end) {
-					continue
-				}
-
-				const shift = await Shift.create({
-					start,
-					end,
-					employee,
-					workDay,
-					roster,
-				})
-
-				workDay.shifts.push(shift._id)
-				await Promise.all([shift.save(), workDay.save()])
-				roster.shifts.push(shift._id)
-			}
-
-			employee.rosters.push(roster._id)
-
-			await Promise.all([roster.save(), employee.save(), schedule.save()])
-
-			console.log('Roster Created')
-			return res.status(201).json(roster)
-		} catch (error) {
-			console.log(error)
-			res.status(500).json({ message: 'Server error' })
-		}
-	})
-	.put(Authenticate, async (req: Request, res: Response) => {
-		try {
-			const { id, data } = req.body
-
-			const employee = await Employee.findById(id)
-
-			if (!employee) {
-				return res.status(404).json({ message: 'Employee not found' })
-			}
-
-			const month = data[0].date.slice(3)
-
-			const roster = await Roster.findOne({ employee: employee._id, month: month }).populate({
-				path: 'shifts',
-				populate: {
-					path: 'workDay',
-				},
-			})
-
-			if (!roster) {
-				return res.status(400).json({ message: 'Employee does not have a roster for the month' })
-			}
-
-			const shiftIds = roster.shifts.map((shift) => shift._id)
-
-			roster.shifts = []
-			await roster.save()
-
-			await WorkDay.updateMany({ shifts: { $in: shiftIds } }, { $pull: { shifts: { $in: shiftIds } } })
-
-			await Shift.deleteMany({ _id: { $in: shiftIds }, roster: roster._id })
-
-			for (const { date, start, end } of data) {
-				let workDay = await WorkDay.findOne({ date: date })
-
-				if (!start || !end) {
-					continue
-				}
-
-				const shift = await Shift.create({
-					start,
-					end,
-					employee,
-					workDay,
-					roster,
-				})
-
-				workDay?.shifts.push(shift._id)
-				await Promise.all([shift.save(), workDay?.save()])
-				roster.shifts.push(shift._id)
-			}
-
-			await Promise.all([roster.save(), employee.save()])
-
-			return res.status(201).json(roster)
-		} catch (error) {
-			res.status(500).json({ message: 'Server error' })
-			console.log(error)
-		}
-	})
-	.delete(Authenticate, async (req: Request, res: Response) => {
-		const rosterId = req.query.id
-
-		const roster = await Roster.findById(rosterId).populate({
-			path: 'shifts',
-			populate: {
-				path: 'workDay',
-			},
-		})
-
-		if (!roster) {
-			return res.status(404).json({ message: 'Roster not found' })
+		if (!user) {
+			return res.status(401).json({ message: 'Unauthorized' })
 		}
 
-		const employee = await Employee.findById(roster.employee._id)
+		const employee = await Employee.findById(id)
 
 		if (!employee) {
 			return res.status(404).json({ message: 'Employee not found' })
 		}
 
-		employee.rosters = employee.rosters.filter((roster) => roster.toString() !== rosterId)
-		await employee.save()
+		for (const { date, start, end } of data) {
+			let workDay = await WorkDay.findOne({ date: date })
 
-		const shiftIds = roster.shifts.map((shift) => shift._id)
+			if (!workDay) {
+				workDay = await WorkDay.create({ date: date })
+			}
 
-		await WorkDay.updateMany({ shifts: { $in: shiftIds } }, { $pull: { shifts: { $in: shiftIds } } })
+			if (!start || !end) {
+				continue
+			}
 
-		await Shift.deleteMany({ _id: { $in: shiftIds }, roster: roster._id })
-
-		await Roster.findByIdAndDelete(rosterId)
-
-		res.status(200).json({ message: 'Roster deleted successfully' })
-	})
-
-router.get('/:id', Authenticate, async (req: Request, res: Response) => {
-	try {
-		const roster = await Roster.findById(req.params.id)
-			.populate({
-				path: 'shifts',
-				populate: {
-					path: 'workDay',
-				},
+			const shift = await Shift.create({
+				start,
+				end,
+				employee,
+				workDay,
 			})
-			.populate('employee')
 
-		if (!roster) {
-			return res.status(404).json({ message: 'Roster not found' })
+			workDay.shifts.push(shift._id)
+			user.workDays.push(workDay._id)
+			await Promise.all([shift.save(), workDay.save(), user.save()])
 		}
 
-		return res.status(200).json(roster)
+		console.log('Roster Created')
+		return res.status(201).json({ message: 'Roster Created' })
 	} catch (error) {
 		console.log(error)
 		res.status(500).json({ message: 'Server error' })

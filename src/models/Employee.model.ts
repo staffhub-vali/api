@@ -3,17 +3,17 @@ import mongoose, { Document, Schema, Model, Types } from 'mongoose'
 interface Employee extends Document {
 	name: string
 	phone: string
-	vacationDays: number
 	email: string
-	rosters: Types.ObjectId[]
+	sickDays: number
+	vacationDays: number
 }
 
 const employeeSchema: Schema<Employee> = new mongoose.Schema({
-	name: { type: String, required: true },
-	phone: { type: String, required: true },
+	name: { type: String },
+	phone: { type: String },
+	email: { type: String },
+	sickDays: { type: Number, default: 0 },
 	vacationDays: { type: Number, default: 25 },
-	email: { type: String, required: true, unique: true },
-	rosters: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Roster' }],
 })
 
 const Employee: Model<Employee> = mongoose.model<Employee>('Employee', employeeSchema)
