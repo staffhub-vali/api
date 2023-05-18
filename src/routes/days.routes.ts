@@ -1,34 +1,51 @@
-import WorkDay from '../models/WorkDay.model'
-import express, { Request, Response } from 'express'
+import User from '../models/User.model'
+import express, { Response } from 'express'
 import { Authenticate } from '../middleware/jwt.middleware'
+import { CustomRequest } from '../middleware/jwt.middleware'
 
 const router = express.Router()
 
-router.get('/', Authenticate, async (req: Request, res: Response) => {
+router.get('/', Authenticate, async (req: CustomRequest | any, res: Response) => {
 	try {
-		const today = new Date().toLocaleDateString('en-GB')
-
-		const workDays = await WorkDay.find({
-			date: today,
+		const user = await User.findOne({ _id: req.token._id }).populate({
+			path: 'workDays',
 		})
 
-		res.status(200).json(workDays)
+		if (!user) {
+			return res.status(401).json({ message: 'Unauthorized' })
+		}
+
+		res.status(200).json(user.workDays)
 	} catch (error) {
 		console.log(error)
 		res.status(500).json({ message: 'Server Error' })
 	}
 })
 
-router.get('/:id', Authenticate, async (req, res) => {
+router.get('/:id', Authenticate, async (req: CustomRequest | any, res: Response) => {
 	try {
-		const workDay = await WorkDay.findById(req.params.id).populate({
-			path: 'shifts',
+		const user = await User.findById(req.token._id).populate({
+			path: 'workDays',
 			populate: {
-				path: 'employee',
+				path: 'shifts',
+				populate: {
+					path: 'employee',
+				},
 			},
 		})
-		res.json(workDay)
-	} catch (error: Error | any) {
+
+		if (!user) {
+			return res.status(401).json({ message: 'Unauthorized' })
+		}
+
+		const workDay = user.workDays.find((workDay) => workDay._id.toString() === req.params.id)
+
+		if (!workDay) {
+			return res.status(404).json({ message: 'Work day not found.' })
+		}
+
+		res.status(200).json(workDay)
+	} catch (error: any) {
 		console.log(error)
 		res.status(500).json({ message: error.message })
 	}
