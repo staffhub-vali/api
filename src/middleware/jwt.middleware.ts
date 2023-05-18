@@ -9,7 +9,7 @@ export interface CustomRequest extends Request {
 	token: JwtPayload
 }
 
-export const Authenticate = async (req: CustomRequest, res: Response, next: NextFunction) => {
+export const Authenticate = async (req: Request, res: Response, next: NextFunction) => {
 	try {
 		const token = req.header('Authorization')?.replace('Bearer ', '')
 

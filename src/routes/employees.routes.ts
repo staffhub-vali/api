@@ -37,7 +37,7 @@ router
 	.route('/:id')
 	.get(Authenticate, async (req: Request, res: Response) => {
 		try {
-			const employee = await Employee.findById(req.params.id).populate('rosters')
+			const employee = await Employee.findById(req.params.id)
 
 			if (!employee) {
 				return res.status(404).json({ message: 'Employee not found.' })
