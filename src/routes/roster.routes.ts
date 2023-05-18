@@ -30,6 +30,8 @@ router.route('/').post(Authenticate, async (req: CustomRequest | any, res: Respo
 				workDay = await WorkDay.create({ date: date })
 			}
 
+			user.workDays.push(workDay._id)
+
 			if (!start || !end) {
 				continue
 			}
@@ -42,7 +44,7 @@ router.route('/').post(Authenticate, async (req: CustomRequest | any, res: Respo
 			})
 
 			workDay.shifts.push(shift._id)
-			user.workDays.push(workDay._id)
+
 			await Promise.all([shift.save(), workDay.save(), user.save()])
 		}
 

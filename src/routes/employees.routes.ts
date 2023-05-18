@@ -1,22 +1,37 @@
+import User from '../models/User.model'
 import express, { Request, Response } from 'express'
 import Employee from '../models/Employee.model'
 import { Authenticate } from '../middleware/jwt.middleware'
+import { CustomRequest } from '../middleware/jwt.middleware'
 
 const router = express.Router()
 
 router
 	.route('/')
-	.get(Authenticate, async (req: Request, res: Response) => {
+	.get(Authenticate, async (req: CustomRequest | any, res: Response) => {
 		try {
-			const employees = await Employee.find().sort({ name: 'asc' })
+			const user = await User.findById(req.token._id).populate({
+				path: 'employees',
+				options: { sort: { name: 1 } },
+			})
 
-			return res.status(200).json(employees)
+			if (!user) {
+				return res.status(401).json({ message: 'Unauthorized' })
+			}
+
+			return res.status(200).json(user.employees)
 		} catch (error) {
 			return res.status(500).json({ message: 'Failed to retrieve employees.', error })
 		}
 	})
-	.post(Authenticate, async (req: Request, res: Response) => {
+	.post(Authenticate, async (req: CustomRequest | any, res: Response) => {
 		try {
+			const user = await User.findById(req.token._id)
+
+			if (!user) {
+				return res.status(401).json({ message: 'Unauthorized' })
+			}
+
 			const { name, email, phone } = req.body
 
 			if (!name || !email || !phone) {
@@ -25,7 +40,9 @@ router
 
 			const employee = new Employee({ name, email, phone })
 
-			await employee.save()
+			user.employees.push(employee._id)
+
+			await Promise.all([employee.save(), user.save()])
 
 			return res.status(201).json(employee)
 		} catch (error) {
@@ -35,43 +52,22 @@ router
 
 router
 	.route('/:id')
-	.get(Authenticate, async (req: Request, res: Response) => {
+	.get(Authenticate, async (req: CustomRequest | any, res: Response) => {
 		try {
-			const employee = await Employee.findById(req.params.id)
+			const user = await User.findById(req.token._id).populate('employees')
 
-			if (!employee) {
-				return res.status(404).json({ message: 'Employee not found.' })
+			if (!user) {
+				return res.status(401).json({ message: 'Unauthorized' })
 			}
+
+			const employee = user.employees.find((employee) => employee._id.toString() === req.params.id)
 
 			return res.status(200).json(employee)
 		} catch (error) {
 			return res.status(500).json({ message: 'Failed to retrieve employee.', error })
 		}
 	})
-	.post(Authenticate, async (req: Request, res: Response) => {
-		try {
-			const { name, email, phone } = req.body
-			if (!name || !email || !phone) {
-				return res.status(400).json({ message: 'Name, email, and phone are required.' })
-			}
-
-			const employee = await Employee.findById(req.params.id)
-
-			if (!employee) {
-				return res.status(404).json({ message: 'Employee not found.' })
-			}
-
-			employee.name = name
-			employee.email = email
-			employee.phone = phone
-
-			await employee.save()
-
-			return res.status(200).json(employee)
-		} catch (error) {
-			return res.status(500).json({ message: 'Failed to update employee.', error })
-		}
-	})
+	.post(Authenticate, async (req: Request, res: Response) => {})
 	.put(Authenticate, async (req: Request, res: Response) => {})
 	.delete(Authenticate, async (req: Request, res: Response) => {})
 
