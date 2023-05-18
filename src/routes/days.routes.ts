@@ -1,5 +1,4 @@
 import User from '../models/User.model'
-import WorkDay from '../models/WorkDay.model'
 import express, { Response } from 'express'
 import { Authenticate } from '../middleware/jwt.middleware'
 import { CustomRequest } from '../middleware/jwt.middleware'
@@ -8,12 +7,8 @@ const router = express.Router()
 
 router.get('/', Authenticate, async (req: CustomRequest | any, res: Response) => {
 	try {
-		const today = Math.floor(new Date().getTime() / 1000)
-
 		const user = await User.findOne({ _id: req.token._id }).populate({
 			path: 'workDays',
-			match: { date: { $lt: today } },
-			options: { limit: 7 },
 		})
 
 		if (!user) {
