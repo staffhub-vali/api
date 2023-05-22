@@ -30,7 +30,11 @@ router.route('/').post(Authenticate, async (req: CustomRequest | any, res: Respo
 				workDay = await WorkDay.create({ date: date })
 			}
 
-			user.workDays.push(workDay._id)
+			const isWorkDayAlreadyAdded = user.workDays.some((workDayId) => workDayId.equals(workDay?._id))
+
+			if (!isWorkDayAlreadyAdded) {
+				user.workDays.push(workDay._id)
+			}
 
 			if (!start || !end) {
 				continue
