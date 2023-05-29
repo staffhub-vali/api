@@ -34,6 +34,7 @@ router.route('/').post(Authenticate, async (req: CustomRequest | any, res: Respo
 
 			if (!isWorkDayAlreadyAdded) {
 				user.workDays.push(workDay._id)
+				await user.save()
 			}
 
 			if (!start || !end) {
