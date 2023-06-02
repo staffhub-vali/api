@@ -67,8 +67,29 @@ router
 			return res.status(500).json({ message: 'Failed to retrieve employee.', error })
 		}
 	})
-	.post(Authenticate, async (req: Request, res: Response) => {})
-	.put(Authenticate, async (req: Request, res: Response) => {})
+	.put(Authenticate, async (req: Request, res: Response) => {
+		const { id, name, email, phone, sickDays, vacationDays } = req.body
+		try {
+			const employee = await Employee.findById(id)
+
+			if (!employee) {
+				return res.status(404).json({ message: 'Employee not found.' })
+			}
+
+			employee.name = name
+			employee.email = email
+			employee.phone = phone
+			employee.sickDays = sickDays
+			employee.vacationDays = vacationDays
+
+			await employee.save()
+
+			res.status(200).json({ message: 'Employee updated successfully.' })
+		} catch (error) {
+			console.log(error)
+			res.status(500).json({ message: 'Failed to retrieve employee.' })
+		}
+	})
 	.delete(Authenticate, async (req: Request, res: Response) => {})
 
 module.exports = router
