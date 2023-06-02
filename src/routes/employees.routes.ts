@@ -90,6 +90,26 @@ router
 			res.status(500).json({ message: 'Failed to retrieve employee.' })
 		}
 	})
-	.delete(Authenticate, async (req: Request, res: Response) => {})
+	.delete(Authenticate, async (req: CustomRequest | any, res: Response) => {
+		try {
+			const { id } = req.query
+
+			const user = await User.findById(req.token._id)
+
+			if (!user) {
+				return res.status(401).json({ message: 'Unauthorized' })
+			}
+
+			await Employee.findByIdAndDelete(id)
+
+			user.employees = user.employees.filter((employeeId) => employeeId.toString() !== id.toString())
+			await user.save()
+
+			res.status(200).json({ message: 'Employee deleted successfully.' })
+		} catch (error) {
+			console.log(error)
+			res.status(500).json({ message: 'Failed to delete employee.' })
+		}
+	})
 
 module.exports = router
