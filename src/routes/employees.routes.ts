@@ -44,7 +44,7 @@ router
 
 			await Promise.all([employee.save(), user.save()])
 
-			return res.status(201).json(employee)
+			return res.status(201).json({ message: 'Employee created successfully.' })
 		} catch (error) {
 			return res.status(500).json({ message: 'Failed to create employee.', error })
 		}
