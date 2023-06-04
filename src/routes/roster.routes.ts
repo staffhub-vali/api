@@ -22,7 +22,7 @@ router.route('/').post(Authenticate, async (req: CustomRequest | any, res: Respo
 		const user = await User.findOne({ _id: req.token._id })
 
 		if (!user) {
-			return res.status(401).json({ message: 'Unauthorized' })
+			return res.status(404).json({ message: 'User not found.' })
 		}
 
 		const employee = await Employee.findById(id)
@@ -53,10 +53,12 @@ router.route('/').post(Authenticate, async (req: CustomRequest | any, res: Respo
 				shift = await Shift.create({ employee, workDay, start, end })
 			}
 
-			shift.start = start
 			shift.end = end
+			shift.start = start
 
-			workDay.shifts.push(shift._id)
+			if (!workDay.shifts.some((shiftId) => shiftId.equals(shift?._id))) {
+				workDay.shifts.push(shift._id)
+			}
 
 			await Promise.all([shift.save(), workDay.save(), user.save()])
 		}

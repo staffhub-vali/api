@@ -28,7 +28,7 @@ router.get('/', Authenticate, async (req: CustomRequest | any, res: Response) =>
 		})
 
 		if (!user) {
-			return res.status(401).json({ message: 'Unauthorized' })
+			return res.status(404).json({ message: 'User not found.' })
 		}
 
 		res.status(200).json(user.workDays)
@@ -53,7 +53,7 @@ router
 			})
 
 			if (!user) {
-				return res.status(401).json({ message: 'Unauthorized' })
+				return res.status(404).json({ message: 'User not found.' })
 			}
 
 			const workDay = user.workDays.find((workDay) => workDay._id.toString() === req.params.id)
@@ -97,8 +97,44 @@ router
 
 			await workDay.save()
 
-			res.status(200).json({ message: 'Shifts updated successfully.' })
+			res.status(200).json({ message: 'Shift updated successfully.' })
 		} catch (error: any) {
+			console.log(error)
+			res.status(500).json({ message: 'Internal Server Error' })
+		}
+	})
+	.delete(Authenticate, async (req: CustomRequest | any, res: Response) => {
+		try {
+			const { shiftId, workDayId } = req.query
+
+			const user = await User.findById(req.token._id).populate({
+				path: 'workDays',
+				populate: {
+					path: 'shifts',
+				},
+			})
+
+			if (!user) {
+				return res.status(404).json({ message: 'User not found.' })
+			}
+
+			const workDay: workDayProps | undefined = user.workDays.find((workDay) => workDay._id.toString() === workDayId)
+
+			if (!workDay) {
+				return res.status(404).json({ message: 'Work day not found.' })
+			}
+
+			await Shift.findByIdAndDelete(shiftId)
+
+			const shiftIndex = workDay.shifts.findIndex((shift: any) => shift._id.toString() === shiftId)
+
+			if (shiftIndex !== -1) {
+				workDay.shifts.splice(shiftIndex, 1)
+				await workDay.save()
+			}
+
+			res.status(200).json({ message: 'Shift deleted successfully.' })
+		} catch (error) {
 			console.log(error)
 			res.status(500).json({ message: 'Internal Server Error' })
 		}
