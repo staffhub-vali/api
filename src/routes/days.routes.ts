@@ -72,7 +72,38 @@ router
 			res.status(200).json({ message: 'Note saved successfully.' })
 		} catch (error) {
 			console.log(error)
-			res.status(500).json({ message: 'Server Error' })
+			res.status(500).json({ message: 'Interal Server Error' })
+		}
+	})
+	.put(Authenticate, async (req: CustomRequest | any, res: Response) => {
+		try {
+			const { note, index, workDayId } = req.body
+
+			const user = await User.findById(req.token._id).populate({
+				path: 'workDays',
+				populate: {
+					path: 'notes',
+				},
+			})
+
+			if (!user) {
+				return res.status(404).json({ message: 'User not found.' })
+			}
+
+			const workDay = user.workDays.find((d) => d._id.toString() === workDayId)
+
+			if (!workDay) {
+				return res.status(404).json({ message: 'Work day not found.' })
+			}
+
+			workDay.notes[index] = note
+
+			await workDay.save()
+
+			res.status(200).json({ message: 'Note updated successfully.' })
+		} catch (error) {
+			console.log(error)
+			res.status(500).json({ message: 'Internal Server Error' })
 		}
 	})
 	.delete(Authenticate, async (req: CustomRequest | any, res: Response) => {
@@ -103,7 +134,7 @@ router
 			res.status(200).json({ message: 'Note deleted successfully.' })
 		} catch (error) {
 			console.log(error)
-			res.status(500).json({ message: 'Server Error' })
+			res.status(500).json({ message: 'Interal Server Error' })
 		}
 	})
 
@@ -134,7 +165,7 @@ router
 			res.status(200).json(workDay)
 		} catch (error: any) {
 			console.log(error)
-			res.status(500).json({ message: error.message })
+			res.status(500).json({ message: 'Interal Server Error' })
 		}
 	})
 	.put(Authenticate, async (req: CustomRequest | any, res: Response) => {
