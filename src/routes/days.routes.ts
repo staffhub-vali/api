@@ -23,8 +23,14 @@ interface workDayProps {
 
 router.get('/', Authenticate, async (req: CustomRequest | any, res: Response) => {
 	try {
+		const { skip } = req.query
+
 		const user = await User.findOne({ _id: req.token._id }).populate({
 			path: 'workDays',
+			options: {
+				limit: 7,
+				skip: skip || 0,
+			},
 		})
 
 		if (!user) {

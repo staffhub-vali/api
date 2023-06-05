@@ -29,3 +29,5 @@ app.listen(PORT, () => {
 })
 
 console.clear()
+
+export default app

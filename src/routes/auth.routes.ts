@@ -56,14 +56,13 @@ router.post('/login', async (req: Request, res: Response) => {
 		const { email, password, rememberMe } = req.body
 
 		if (email === '' || password === '') {
-			res.status(400).json({ message: 'Please provide an email and a password.' })
-			return
+			return res.status(400).json({ message: 'Please provide an email and a password.' })
 		}
 
 		const user = await User.findOne({ email })
+
 		if (!user) {
-			res.status(401).json({ message: 'Wrong Email or Password.' })
-			return
+			return res.status(401).json({ message: 'Wrong Email or Password.' })
 		}
 
 		const passwordCorrect = bcrypt.compareSync(password, user.password)
@@ -81,8 +80,7 @@ router.post('/login', async (req: Request, res: Response) => {
 			const TOKEN_SECRET: Secret | undefined = process.env.TOKEN_SECRET
 
 			if (!TOKEN_SECRET) {
-				res.status(400).json({ message: 'Token secret is missing.' })
-				return
+				return res.status(400).json({ message: 'Token secret is missing.' })
 			}
 
 			const token = jwt.sign(payload, TOKEN_SECRET, {
