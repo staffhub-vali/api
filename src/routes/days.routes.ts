@@ -38,6 +38,42 @@ router.get('/', Authenticate, async (req: CustomRequest | any, res: Response) =>
 	}
 })
 
+router.post('/notes', Authenticate, async (req: CustomRequest | any, res: Response) => {
+	try {
+		const { day, note } = req.body
+
+		if (!note) {
+			return res.status(400).json({ message: 'Cannot create empty notes.' })
+		}
+
+		const user = await User.findOne({ _id: req.token._id }).populate({
+			path: 'workDays',
+			populate: {
+				path: 'notes',
+			},
+		})
+
+		if (!user) {
+			return res.status(404).json({ message: 'User not found.' })
+		}
+
+		const workDay = user.workDays.find((d) => d._id.toString() === day)
+
+		if (!workDay) {
+			return res.status(404).json({ message: 'Work day not found.' })
+		}
+
+		workDay.notes.push(note)
+
+		await workDay.save()
+
+		res.status(200).json({ message: 'Note saved successfully.' })
+	} catch (error) {
+		console.log(error)
+		res.status(500).json({ message: 'Server Error' })
+	}
+})
+
 router
 	.route('/:id')
 	.get(Authenticate, async (req: CustomRequest | any, res: Response) => {

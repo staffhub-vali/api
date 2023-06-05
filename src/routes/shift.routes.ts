@@ -1,7 +1,5 @@
 import User from '../models/User.model'
 import Shift from '../models/Shift.model'
-import WorkDay from '../models/WorkDay.model'
-import Employee from '../models/Employee.model'
 import express, { Response } from 'express'
 import { Authenticate, CustomRequest } from '../middleware/jwt.middleware'
 
