@@ -1,4 +1,5 @@
 import User from '../models/User.model'
+import WorkDay from '../models/WorkDay.model'
 import Shift from '../models/Shift.model'
 import express, { Response } from 'express'
 import { Authenticate } from '../middleware/jwt.middleware'
@@ -23,21 +24,32 @@ interface workDayProps {
 
 router.get('/', Authenticate, async (req: CustomRequest | any, res: Response) => {
 	try {
-		const { skip } = req.query
+		let { skip } = req.query
+		skip = parseInt(skip) || 0
 
-		const user = await User.findOne({ _id: req.token._id }).populate({
-			path: 'workDays',
-			options: {
-				limit: 7,
-				skip: skip || 0,
-			},
-		})
+		const currentDate = Math.floor(Date.now() / 1000)
+
+		const today = new Date()
+		const currentDayOfWeek = today.getDay()
+
+		const startOfWeek = currentDate - currentDayOfWeek * 24 * 60 * 60 + skip * 7 * 24 * 60 * 60
+		const endOfWeek = startOfWeek + 7 * 24 * 60 * 60
+
+		const user = await User.findOne({ _id: req.token._id })
 
 		if (!user) {
 			return res.status(404).json({ message: 'User not found.' })
 		}
 
-		res.status(200).json(user.workDays)
+		const workDays = await WorkDay.find({
+			date: { $gte: startOfWeek, $lte: endOfWeek },
+		}).limit(7)
+
+		if (!workDays) {
+			return res.status(404).json({ message: 'Work days not found.' })
+		}
+
+		res.status(200).json(workDays)
 	} catch (error) {
 		console.log(error)
 		res.status(500).json({ message: 'Server Error' })
