@@ -43,7 +43,14 @@ router.get('/', Authenticate, async (req: CustomRequest | any, res: Response) =>
 
 		const workDays = await WorkDay.find({
 			date: { $gte: startOfWeek, $lte: endOfWeek },
-		}).limit(7)
+		})
+			.populate({
+				path: 'shifts',
+				populate: {
+					path: 'employee',
+				},
+			})
+			.limit(7)
 
 		if (!workDays) {
 			return res.status(404).json({ message: 'Work days not found.' })
