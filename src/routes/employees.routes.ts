@@ -57,7 +57,7 @@ router
 			const user = await User.findById(req.token._id).populate('employees')
 
 			if (!user) {
-				return res.status(401).json({ message: 'Unauthorized' })
+				return res.status(404).json({ message: 'User not found.' })
 			}
 
 			const employee = user.employees.find((employee) => employee._id.toString() === req.params.id)
@@ -103,6 +103,7 @@ router
 			await Employee.findByIdAndDelete(id)
 
 			user.employees = user.employees.filter((employeeId) => employeeId.toString() !== id.toString())
+
 			await user.save()
 
 			res.status(200).json({ message: 'Employee deleted successfully.' })
