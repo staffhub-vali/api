@@ -51,6 +51,96 @@ router
 	})
 
 router
+	.route('/notes')
+	.post(Authenticate, async (req: CustomRequest | any, res: Response) => {
+		try {
+			const { note, employeeId } = req.body
+
+			const user = await User.findById(req.token._id).populate({
+				path: 'employees',
+				populate: {
+					path: 'notes',
+				},
+			})
+
+			if (!user) {
+				return res.status(404).json({ message: 'User not found.' })
+			}
+
+			const employee = user.employees.find((employee) => employee._id.toString() === employeeId.toString())
+
+			if (!employee) {
+				return res.status(404).json({ message: 'Employee not found.' })
+			}
+
+			employee.notes.push(note)
+
+			await employee.save()
+
+			res.status(200).json({ message: 'Note added successfully.' })
+		} catch (error) {
+			console.log(error)
+			res.status(500).json({ message: 'Internal Server Error.' })
+		}
+	})
+	.put(Authenticate, async (req: CustomRequest | any, res: Response) => {
+		try {
+			const { employeeId, index, note } = req.body
+
+			const user = await User.findById(req.token._id).populate({
+				path: 'employees',
+			})
+
+			if (!user) {
+				return res.status(404).json({ message: 'User not found.' })
+			}
+
+			const employee = user.employees.find((employee) => employee._id.toString() === employeeId)
+
+			if (!employee) {
+				return res.status(404).json({ message: 'Employee not found.' })
+			}
+
+			employee.notes[index] = note
+
+			await employee.save()
+
+			return res.status(200).json({ message: 'Note updated successfully.' })
+		} catch (error) {
+			console.log(error)
+			return res.status(500).json({ message: 'Internal Server Error.' })
+		}
+	})
+	.delete(Authenticate, async (req: CustomRequest | any, res: Response) => {
+		try {
+			const { employeeId, index } = req.query
+
+			const user = await User.findById(req.token._id).populate({
+				path: 'employees',
+			})
+
+			if (!user) {
+				return res.status(404).json({ message: 'User not found.' })
+			}
+
+			const employee = user.employees.find((employee) => employee._id.toString() === employeeId)
+
+			if (!employee) {
+				return res.status(404).json({ message: 'Employee not found.' })
+			}
+
+			employee.notes.splice(index, 1)
+
+			await employee.save()
+
+			return res.status(200).json({ message: 'Note deleted successfully.' })
+		} catch (error) {
+			console.log(error)
+			return res.status(500).json({ message: 'Internal Server Error.' })
+		}
+	})
+
+router
 	.route('/:id')
 	.get(Authenticate, async (req: CustomRequest | any, res: Response) => {
 		try {
@@ -68,7 +158,7 @@ router
 		}
 	})
 	.put(Authenticate, async (req: Request, res: Response) => {
-		const { id, name, email, phone, sickDays, vacationDays } = req.body
+		const { id, name, email, phone } = req.body
 		try {
 			const employee = await Employee.findById(id)
 
@@ -79,8 +169,6 @@ router
 			employee.name = name
 			employee.email = email
 			employee.phone = phone
-			employee.sickDays = sickDays
-			employee.vacationDays = vacationDays
 
 			await employee.save()
 
@@ -97,7 +185,7 @@ router
 			const user = await User.findById(req.token._id)
 
 			if (!user) {
-				return res.status(401).json({ message: 'Unauthorized' })
+				return res.status(404).json({ message: 'User not found.' })
 			}
 
 			await Employee.findByIdAndDelete(id)

@@ -4,15 +4,17 @@ interface Employee extends Document {
 	name: string
 	phone: string
 	email: string
-	sickDays: number
+	notes: string[]
 	vacationDays: number
+	shiftPreferences: string[]
 }
 
 const employeeSchema: Schema<Employee> = new mongoose.Schema({
 	name: { type: String },
 	phone: { type: String },
 	email: { type: String },
-	sickDays: { type: Number, default: 0 },
+	notes: { type: [String] },
+	shiftPreferences: { type: [String] },
 	vacationDays: { type: Number, default: 25 },
 })
 
