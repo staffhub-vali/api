@@ -56,6 +56,10 @@ router
 		try {
 			const { note, employeeId } = req.body
 
+			if (note === '') {
+				return res.status(400).json({ message: 'Note can not be empty.' })
+			}
+
 			const user = await User.findById(req.token._id).populate({
 				path: 'employees',
 				populate: {
@@ -134,6 +138,101 @@ router
 			await employee.save()
 
 			return res.status(200).json({ message: 'Note deleted successfully.' })
+		} catch (error) {
+			console.log(error)
+			return res.status(500).json({ message: 'Internal Server Error.' })
+		}
+	})
+
+router
+	.route('/preferences')
+	.post(Authenticate, async (req: CustomRequest | any, res: Response) => {
+		try {
+			const { shiftPreference, employeeId } = req.body
+
+			if (shiftPreference === '') {
+				return res.status(400).json({ message: 'Shift preference can not be empty.' })
+			}
+
+			const user = await User.findById(req.token._id).populate({
+				path: 'employees',
+				populate: {
+					path: 'shiftPreferences',
+				},
+			})
+
+			if (!user) {
+				return res.status(404).json({ message: 'User not found.' })
+			}
+
+			const employee = user.employees.find((employee) => employee._id.toString() === employeeId.toString())
+
+			if (!employee) {
+				return res.status(404).json({ message: 'Employee not found.' })
+			}
+
+			employee.shiftPreferences.push(shiftPreference)
+
+			await employee.save()
+
+			res.status(200).json({ message: 'Shift preference added successfully.' })
+		} catch (error) {
+			console.log(error)
+			res.status(500).json({ message: 'Internal Server Error.' })
+		}
+	})
+	.put(Authenticate, async (req: CustomRequest | any, res: Response) => {
+		try {
+			const { employeeId, index, shiftPreference } = req.body
+			console.log(employeeId)
+
+			const user = await User.findById(req.token._id).populate({
+				path: 'employees',
+			})
+
+			if (!user) {
+				return res.status(404).json({ message: 'User not found.' })
+			}
+
+			const employee = user.employees.find((employee) => employee._id.toString() === employeeId)
+
+			if (!employee) {
+				return res.status(404).json({ message: 'Employee not found.' })
+			}
+
+			employee.shiftPreferences[index] = shiftPreference
+
+			await employee.save()
+
+			return res.status(200).json({ message: 'Shift preference updated successfully.' })
+		} catch (error) {
+			console.log(error)
+			return res.status(500).json({ message: 'Internal Server Error.' })
+		}
+	})
+	.delete(Authenticate, async (req: CustomRequest | any, res: Response) => {
+		try {
+			const { employeeId, index } = req.query
+
+			const user = await User.findById(req.token._id).populate({
+				path: 'employees',
+			})
+
+			if (!user) {
+				return res.status(404).json({ message: 'User not found.' })
+			}
+
+			const employee = user.employees.find((employee) => employee._id.toString() === employeeId)
+
+			if (!employee) {
+				return res.status(404).json({ message: 'Employee not found.' })
+			}
+
+			employee.shiftPreferences.splice(index, 1)
+
+			await employee.save()
+
+			return res.status(200).json({ message: 'Shift preference deleted successfully.' })
 		} catch (error) {
 			console.log(error)
 			return res.status(500).json({ message: 'Internal Server Error.' })
