@@ -239,6 +239,36 @@ router
 		}
 	})
 
+router.route('/vacation').post(Authenticate, async (req: CustomRequest | any, res: Response) => {
+	try {
+		const { employeeId, start, end, daysRemaining } = req.body
+
+		const user = await User.findById(req.token._id).populate({
+			path: 'employees',
+		})
+
+		if (!user) {
+			return res.status(404).json({ message: 'User not found.' })
+		}
+
+		const employee = user.employees.find((employee) => employee._id.toString() === employeeId.toString())
+
+		if (!employee) {
+			return res.status(404).json({ message: 'Employee not found.' })
+		}
+
+		employee.vacations.push({ start, end })
+
+		employee.vacationDays = daysRemaining
+
+		await employee.save()
+
+		res.status(200).json({ message: 'Vacation added successfully.' })
+	} catch (error) {
+		return res.status(500).json({ message: 'Internal Server Error.' })
+	}
+})
+
 router
 	.route('/:id')
 	.get(Authenticate, async (req: CustomRequest | any, res: Response) => {
