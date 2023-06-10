@@ -270,6 +270,34 @@ router
 			return res.status(500).json({ message: 'Internal Server Error.' })
 		}
 	})
+	.put(Authenticate, async (req: CustomRequest | any, res: Response) => {
+		try {
+			const { employeeId, amount } = req.body
+
+			const user = await User.findById(req.token._id).populate({
+				path: 'employees',
+			})
+
+			if (!user) {
+				return res.status(404).json({ message: 'User not found.' })
+			}
+
+			const employee = user.employees.find((employee) => employee._id.toString() === employeeId.toString())
+
+			if (!employee) {
+				return res.status(404).json({ message: 'Employee not found.' })
+			}
+
+			employee.vacationDays = amount
+
+			await employee.save()
+
+			return res.status(200).json({ message: 'Vacation amount updated successfully.' })
+		} catch (error) {
+			console.log(error)
+			return res.status(500).json({ message: 'Internal Server Error.' })
+		}
+	})
 	.delete(Authenticate, async (req: CustomRequest | any, res: Response) => {
 		try {
 			const { employeeId, index } = req.query
