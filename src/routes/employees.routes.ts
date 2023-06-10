@@ -239,35 +239,72 @@ router
 		}
 	})
 
-router.route('/vacation').post(Authenticate, async (req: CustomRequest | any, res: Response) => {
-	try {
-		const { employeeId, start, end, daysRemaining } = req.body
+router
+	.route('/vacation')
+	.post(Authenticate, async (req: CustomRequest | any, res: Response) => {
+		try {
+			const { employeeId, start, end, daysRemaining } = req.body
 
-		const user = await User.findById(req.token._id).populate({
-			path: 'employees',
-		})
+			const user = await User.findById(req.token._id).populate({
+				path: 'employees',
+			})
 
-		if (!user) {
-			return res.status(404).json({ message: 'User not found.' })
+			if (!user) {
+				return res.status(404).json({ message: 'User not found.' })
+			}
+
+			const employee = user.employees.find((employee) => employee._id.toString() === employeeId.toString())
+
+			if (!employee) {
+				return res.status(404).json({ message: 'Employee not found.' })
+			}
+
+			employee.vacations.push({ start, end })
+
+			employee.vacationDays = daysRemaining
+
+			await employee.save()
+
+			res.status(200).json({ message: 'Vacation added successfully.' })
+		} catch (error) {
+			return res.status(500).json({ message: 'Internal Server Error.' })
 		}
+	})
+	.delete(Authenticate, async (req: CustomRequest | any, res: Response) => {
+		try {
+			const { employeeId, index } = req.query
 
-		const employee = user.employees.find((employee) => employee._id.toString() === employeeId.toString())
+			const user = await User.findById(req.token._id).populate({
+				path: 'employees',
+			})
 
-		if (!employee) {
-			return res.status(404).json({ message: 'Employee not found.' })
+			if (!user) {
+				return res.status(404).json({ message: 'User not found.' })
+			}
+
+			const employee = user.employees.find((employee) => employee._id.toString() === employeeId)
+
+			if (!employee) {
+				return res.status(404).json({ message: 'Employee not found.' })
+			}
+
+			const vacation = employee.vacations[index]
+
+			const millisecondsPerDay = 24 * 60 * 60 * 1000
+			const totalDays = Math.ceil((vacation.end - vacation.start) / millisecondsPerDay) + 1
+
+			employee.vacations.splice(index, 1)
+
+			employee.vacationDays += totalDays
+
+			await employee.save()
+
+			res.status(200).json({ message: 'Vacation deleted successfully.' })
+		} catch (error) {
+			console.log(error)
+			res.status(500).json({ message: 'Failed to delete vacation.' })
 		}
-
-		employee.vacations.push({ start, end })
-
-		employee.vacationDays = daysRemaining
-
-		await employee.save()
-
-		res.status(200).json({ message: 'Vacation added successfully.' })
-	} catch (error) {
-		return res.status(500).json({ message: 'Internal Server Error.' })
-	}
-})
+	})
 
 router
 	.route('/:id')
