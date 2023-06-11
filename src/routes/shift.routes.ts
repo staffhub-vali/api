@@ -17,7 +17,7 @@ router
 				return res.status(404).json({ message: 'User not found.' })
 			}
 
-			const shifts = await Shift.find({ employee: employeeId })
+			const shifts = await Shift.find({ employee: employeeId }).populate({ path: 'workDay' })
 
 			if (!shifts) {
 				return res.status(404).json({ message: 'Shifts not found.' })

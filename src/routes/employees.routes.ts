@@ -243,7 +243,13 @@ router
 	.route('/vacation')
 	.post(Authenticate, async (req: CustomRequest | any, res: Response) => {
 		try {
-			const { employeeId, start, end, daysRemaining } = req.body
+			const { employeeId, start, end, daysRemaining, daysPlanned } = req.body
+
+			console.log(daysPlanned)
+
+			if (daysPlanned < 1) {
+				return res.status(400).json({ message: 'Days planned cannot be negative.' })
+			}
 
 			const user = await User.findById(req.token._id).populate({
 				path: 'employees',
@@ -327,7 +333,7 @@ router
 
 			await employee.save()
 
-			res.status(200).json({ message: 'Vacation deleted successfully.' })
+			res.status(200).json({ message: 'Vacation deleted successfully.', totalDays: totalDays })
 		} catch (error) {
 			console.log(error)
 			res.status(500).json({ message: 'Failed to delete vacation.' })
