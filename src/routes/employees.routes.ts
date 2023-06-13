@@ -184,7 +184,6 @@ router
 	.put(Authenticate, async (req: CustomRequest | any, res: Response) => {
 		try {
 			const { employeeId, index, shiftPreference } = req.body
-			console.log(employeeId)
 
 			const user = await User.findById(req.token._id).populate({
 				path: 'employees',
@@ -244,8 +243,6 @@ router
 	.post(Authenticate, async (req: CustomRequest | any, res: Response) => {
 		try {
 			const { employeeId, start, end, daysRemaining, daysPlanned } = req.body
-
-			console.log(daysPlanned)
 
 			if (daysPlanned < 1) {
 				return res.status(400).json({ message: 'Days planned cannot be negative.' })

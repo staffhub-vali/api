@@ -27,6 +27,16 @@ router.get('/', Authenticate, async (req: CustomRequest | any, res: Response) =>
 		let { skip } = req.query
 		skip = parseInt(skip) || 0
 
+		let nextSkip = 0
+
+		if (skip > 0) {
+			nextSkip = skip + 1
+		}
+
+		if (skip < 0) {
+			nextSkip = skip - 1
+		}
+
 		const currentDate = Math.floor(Date.now() / 1000)
 
 		const today = new Date()
@@ -43,20 +53,25 @@ router.get('/', Authenticate, async (req: CustomRequest | any, res: Response) =>
 
 		const workDays = await WorkDay.find({
 			date: { $gte: startOfWeek, $lte: endOfWeek },
+		}).populate({
+			path: 'shifts',
+			populate: {
+				path: 'employee',
+			},
 		})
-			.populate({
-				path: 'shifts',
-				populate: {
-					path: 'employee',
-				},
-			})
-			.limit(7)
 
 		if (!workDays) {
 			return res.status(404).json({ message: 'Work days not found.' })
 		}
 
-		res.status(200).json(workDays)
+		const startOfNextWeek = currentDate - currentDayOfWeek * 24 * 60 * 60 + nextSkip * 7 * 24 * 60 * 60
+		const endOfNextWeek = startOfNextWeek + 7 * 24 * 60 * 60
+
+		const workDaysNextWeek = await WorkDay.find({
+			date: { $gte: startOfNextWeek, $lte: endOfNextWeek },
+		})
+
+		res.status(200).json({ workDays, length: workDaysNextWeek.length })
 	} catch (error) {
 		console.log(error)
 		res.status(500).json({ message: 'Server Error' })
