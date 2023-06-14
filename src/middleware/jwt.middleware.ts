@@ -1,7 +1,7 @@
 import jwt, { Secret, JwtPayload } from 'jsonwebtoken'
 import { Request, Response, NextFunction } from 'express'
 
-const TOKEN_SECRET = process.env.TOKEN_SECRET as string
+const TOKEN_SECRET = process.env.GOOGLE_CLIENT_SECRET as string
 
 export const SECRET_KEY: Secret = TOKEN_SECRET
 

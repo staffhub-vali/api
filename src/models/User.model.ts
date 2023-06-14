@@ -13,7 +13,6 @@ interface User extends Document {
 const userSchema: Schema<User> = new mongoose.Schema(
 	{
 		name: { type: String, required: true },
-		password: { type: String, required: true },
 		email: { type: String, required: true, unique: true },
 		workDays: [{ type: mongoose.Schema.Types.ObjectId, ref: 'WorkDay' }],
 		employees: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Employee' }],
