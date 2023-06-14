@@ -5,6 +5,7 @@ interface Employee extends Document {
 	phone: string
 	email: string
 	notes: string[]
+	address: string
 	vacationDays: number
 	shiftPreferences: string[]
 	vacations: { start: number; end: number }[]
@@ -14,6 +15,7 @@ const employeeSchema: Schema<Employee> = new mongoose.Schema({
 	name: { type: String },
 	phone: { type: String },
 	email: { type: String },
+	address: { type: String },
 	notes: { type: [String] },
 	shiftPreferences: { type: [String] },
 	vacationDays: { type: Number, default: 25 },

@@ -26,19 +26,19 @@ router
 	})
 	.post(Authenticate, async (req: CustomRequest | any, res: Response) => {
 		try {
+			const { name, email, phone, address } = req.body
+
 			const user = await User.findById(req.token._id)
 
 			if (!user) {
-				return res.status(401).json({ message: 'Unauthorized' })
+				return res.status(401).json({ message: 'User not found.' })
 			}
 
-			const { name, email, phone } = req.body
-
-			if (!name || !email || !phone) {
-				return res.status(400).json({ message: 'Name, email, and phone are required.' })
+			if (!name || !email || !phone || !address) {
+				return res.status(400).json({ message: 'Name, email, phone and address are required.' })
 			}
 
-			const employee = new Employee({ name, email, phone })
+			const employee = new Employee({ name, email, phone, address })
 
 			user.employees.push(employee._id)
 
