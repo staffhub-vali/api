@@ -11,12 +11,18 @@ router.route('/').post(Authenticate, async (req: CustomRequest | any, res: Respo
 	try {
 		const { id, data } = req.body
 
+		if (data.length < 1) {
+			return res.status(404).json({ message: 'Please select a month.' })
+		}
+
 		if (!id) {
 			return res.status(400).json({ message: 'Please select an employee.' })
 		}
 
-		if (!data.some((obj: any) => obj.start && obj.end)) {
-			return res.status(400).json({ message: 'Please fill out at least 1 shift.' })
+		const hasShifts = data.some((shift: { start: number; end: number }) => shift.start && shift.end)
+
+		if (!hasShifts) {
+			return res.status(400).json({ message: 'Please make at least one shift.' })
 		}
 
 		const user = await User.findOne({ _id: req.token._id })
