@@ -355,7 +355,7 @@ router
 		}
 	})
 	.put(Authenticate, async (req: Request, res: Response) => {
-		const { id, name, email, phone } = req.body
+		const { id, name, email, phone, address } = req.body
 		try {
 			const employee = await Employee.findById(id)
 
@@ -366,6 +366,7 @@ router
 			employee.name = name
 			employee.email = email
 			employee.phone = phone
+			employee.address = address
 
 			await employee.save()
 
