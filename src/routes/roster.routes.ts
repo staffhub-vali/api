@@ -1,8 +1,8 @@
 import User from '../models/User.model'
 import Shift from '../models/Shift.model'
+import express, { Response } from 'express'
 import WorkDay from '../models/WorkDay.model'
 import Employee from '../models/Employee.model'
-import express, { Response } from 'express'
 import { Authenticate, CustomRequest } from '../middleware/jwt.middleware'
 
 const router = express.Router()
@@ -38,10 +38,16 @@ router.route('/').post(Authenticate, async (req: CustomRequest | any, res: Respo
 		}
 
 		for (const { date, start, end } of data) {
-			let workDay = await WorkDay.findOne({ date: date })
+			const modifiedDate = new Date(date * 1000)
+
+			modifiedDate.setHours(0, 0, 0, 0)
+
+			const midnightUnixCode = Math.floor(modifiedDate.getTime() / 1000)
+
+			let workDay = await WorkDay.findOne({ date: midnightUnixCode })
 
 			if (!workDay) {
-				workDay = await WorkDay.create({ date: date })
+				workDay = await WorkDay.create({ date: midnightUnixCode })
 			}
 
 			if (!user.workDays.some((workDayId) => workDayId.equals(workDay?._id))) {
