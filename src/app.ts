@@ -6,7 +6,7 @@ import connect from './db/connect'
 
 dotenv.config()
 
-const PORT = process.env.PORT || 8080
+const PORT = process.env.PORT || config.get('PORT')
 
 const app = express()
 
