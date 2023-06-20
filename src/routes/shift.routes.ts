@@ -10,7 +10,7 @@ router
 	.route('/')
 	.get(Authenticate, async (req: CustomRequest | any, res: Response) => {
 		try {
-			const { employeeId, start, end } = req.query
+			const { start, end } = req.query
 
 			const user = await User.findById(req.token._id)
 
