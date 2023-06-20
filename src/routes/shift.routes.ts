@@ -1,5 +1,6 @@
 import User from '../models/User.model'
 import Shift from '../models/Shift.model'
+import WorkDay from '../models/WorkDay.model'
 import express, { Response } from 'express'
 import { Authenticate, CustomRequest } from '../middleware/jwt.middleware'
 
@@ -9,7 +10,7 @@ router
 	.route('/')
 	.get(Authenticate, async (req: CustomRequest | any, res: Response) => {
 		try {
-			const { employeeId } = req.query
+			const { employeeId, start, end } = req.query
 
 			const user = await User.findById(req.token._id)
 
@@ -17,13 +18,21 @@ router
 				return res.status(404).json({ message: 'User not found.' })
 			}
 
-			const shifts = await Shift.find({ employee: employeeId }).populate({ path: 'workDay' })
+			const workDays = await WorkDay.find({
+				user: req.token._id,
+				date: {
+					$gte: start,
+					$lte: end,
+				},
+			}).populate({
+				path: 'shifts',
+			})
 
-			if (!shifts) {
-				return res.status(404).json({ message: 'Shifts not found.' })
+			if (!workDays) {
+				return res.status(404).json({ message: 'Work days not found.' })
 			}
 
-			return res.status(200).json(shifts)
+			return res.status(200).json(workDays)
 		} catch (error) {
 			console.log(error)
 			res.status(500).json({ message: 'Internal Server Error.' })

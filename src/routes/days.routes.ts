@@ -52,6 +52,7 @@ router.get('/', Authenticate, async (req: CustomRequest | any, res: Response) =>
 		}
 
 		const workDays = await WorkDay.find({
+			user: req.token._id,
 			date: { $gte: startOfWeek, $lte: endOfWeek },
 		}).populate({
 			path: 'shifts',

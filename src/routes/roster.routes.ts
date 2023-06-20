@@ -44,10 +44,10 @@ router.route('/').post(Authenticate, async (req: CustomRequest | any, res: Respo
 
 			const midnightUnixCode = Math.floor(modifiedDate.getTime() / 1000)
 
-			let workDay = await WorkDay.findOne({ date: midnightUnixCode })
+			let workDay = await WorkDay.findOne({ date: midnightUnixCode, user: req.token._id })
 
 			if (!workDay) {
-				workDay = await WorkDay.create({ date: midnightUnixCode })
+				workDay = await WorkDay.create({ date: midnightUnixCode, user: req.token._id })
 			}
 
 			if (!user.workDays.some((workDayId) => workDayId.equals(workDay?._id))) {
