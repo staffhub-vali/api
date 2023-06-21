@@ -3,6 +3,8 @@ import express, { Request, Response } from 'express'
 import Employee from '../models/Employee.model'
 import { Authenticate } from '../middleware/jwt.middleware'
 import { CustomRequest } from '../middleware/jwt.middleware'
+import WorkDay from '../models/WorkDay.model'
+import Shift from '../models/Shift.model'
 
 const router = express.Router()
 
@@ -387,6 +389,8 @@ router
 			}
 
 			await Employee.findByIdAndDelete(id)
+
+			await Shift.deleteMany({ user: req.token._id, employee: id })
 
 			user.employees = user.employees.filter((employeeId) => employeeId.toString() !== id.toString())
 

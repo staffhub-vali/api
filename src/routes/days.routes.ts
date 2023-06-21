@@ -69,6 +69,7 @@ router.get('/', Authenticate, async (req: CustomRequest | any, res: Response) =>
 		const endOfNextWeek = startOfNextWeek + 7 * 24 * 60 * 60
 
 		const workDaysNextWeek = await WorkDay.find({
+			user: req.token._id,
 			date: { $gte: startOfNextWeek, $lte: endOfNextWeek },
 		})
 
@@ -265,7 +266,7 @@ router
 				return res.status(404).json({ message: 'Work day not found.' })
 			}
 
-			await Shift.findByIdAndDelete(shiftId)
+			await Shift.findOneAndDelete({ user: req.token._id, _id: shiftId })
 
 			const shiftIndex = workDay.shifts.findIndex((shift: any) => shift._id.toString() === shiftId)
 

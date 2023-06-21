@@ -64,17 +64,18 @@ router
 				return res.status(404).json({ message: 'Work day not found' })
 			}
 
-			const existingShift = await Shift.findOne({ workDay: workDayId, employee: employeeId })
+			const existingShift = await Shift.findOne({ user: req.token._id, workDay: workDayId, employee: employeeId })
 
 			if (existingShift) {
 				return res.status(400).json({ message: 'User already has a shift for this day.' })
 			}
 
-			const shift = await Shift.create({ start, end, employee: employeeId, workDay: workDayId })
+			const shift = await Shift.create({ user: req.token._id, start, end, employee: employeeId, workDay: workDayId })
 
 			workDay.shifts.push(shift._id)
 
 			await workDay.save()
+
 			return res.status(201).json({ message: 'Shift created successfully.' })
 		} catch (error: any) {
 			console.log(error)

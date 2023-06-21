@@ -59,10 +59,10 @@ router.route('/').post(Authenticate, async (req: CustomRequest | any, res: Respo
 				continue
 			}
 
-			let shift = await Shift.findOne({ employee, workDay })
+			let shift = await Shift.findOne({ employee, workDay, user: req.token._id })
 
 			if (!shift) {
-				shift = await Shift.create({ employee, workDay, start, end })
+				shift = await Shift.create({ user: req.token._id, employee, workDay, start, end })
 			}
 
 			shift.end = end
