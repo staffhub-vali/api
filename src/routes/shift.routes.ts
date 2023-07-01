@@ -1,25 +1,25 @@
 import User from '../models/User.model'
 import Shift from '../models/Shift.model'
 import WorkDay from '../models/WorkDay.model'
-import express, { Response } from 'express'
-import { Authenticate, CustomRequest } from '../middleware/jwt.middleware'
+import express, { Response, Request } from 'express'
+import { Authenticate } from '../middleware/jwt.middleware'
 
 const router = express.Router()
 
 router
 	.route('/')
-	.get(Authenticate, async (req: CustomRequest | any, res: Response) => {
+	.get(Authenticate, async (req: Request, res: Response) => {
 		try {
 			const { start, end } = req.query
 
-			const user = await User.findById(req.token._id)
+			const user = await User.findById(req.token?._id)
 
 			if (!user) {
 				return res.status(404).json({ message: 'User not found.' })
 			}
 
 			const workDays = await WorkDay.find({
-				user: req.token._id,
+				user: req.token?._id,
 				date: {
 					$gte: start,
 					$lte: end,
@@ -38,7 +38,7 @@ router
 			res.status(500).json({ message: 'Internal Server Error.' })
 		}
 	})
-	.post(Authenticate, async (req: CustomRequest | any, res: Response) => {
+	.post(Authenticate, async (req: Request, res: Response) => {
 		try {
 			const { workDayId, employeeId, start, end } = req.body
 
@@ -50,7 +50,7 @@ router
 				return res.status(400).json({ message: 'Please select a start and end time.' })
 			}
 
-			const user = await User.findById(req.token._id).populate({
+			const user = await User.findById(req.token?._id).populate({
 				path: 'workDays',
 			})
 
@@ -64,13 +64,13 @@ router
 				return res.status(404).json({ message: 'Work day not found' })
 			}
 
-			const existingShift = await Shift.findOne({ user: req.token._id, workDay: workDayId, employee: employeeId })
+			const existingShift = await Shift.findOne({ user: req.token?._id, workDay: workDayId, employee: employeeId })
 
 			if (existingShift) {
 				return res.status(400).json({ message: 'User already has a shift for this day.' })
 			}
 
-			const shift = await Shift.create({ user: req.token._id, start, end, employee: employeeId, workDay: workDayId })
+			const shift = await Shift.create({ user: req.token?._id, start, end, employee: employeeId, workDay: workDayId })
 
 			workDay.shifts.push(shift._id)
 

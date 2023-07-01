@@ -1,13 +1,13 @@
 import User from '../models/User.model'
 import Shift from '../models/Shift.model'
-import express, { Response } from 'express'
 import WorkDay from '../models/WorkDay.model'
 import Employee from '../models/Employee.model'
-import { Authenticate, CustomRequest } from '../middleware/jwt.middleware'
+import express, { Response, Request } from 'express'
+import { Authenticate } from '../middleware/jwt.middleware'
 
 const router = express.Router()
 
-router.route('/').post(Authenticate, async (req: CustomRequest | any, res: Response) => {
+router.route('/').post(Authenticate, async (req: Request, res: Response) => {
 	try {
 		const { id, data } = req.body
 
@@ -25,7 +25,7 @@ router.route('/').post(Authenticate, async (req: CustomRequest | any, res: Respo
 			return res.status(400).json({ message: 'Please make at least one shift.' })
 		}
 
-		const user = await User.findOne({ _id: req.token._id })
+		const user = await User.findOne({ _id: req.token?._id })
 
 		if (!user) {
 			return res.status(404).json({ message: 'User not found.' })
@@ -44,10 +44,10 @@ router.route('/').post(Authenticate, async (req: CustomRequest | any, res: Respo
 
 			const midnightUnixCode = Math.floor(modifiedDate.getTime() / 1000)
 
-			let workDay = await WorkDay.findOne({ date: midnightUnixCode, user: req.token._id })
+			let workDay = await WorkDay.findOne({ date: midnightUnixCode, user: req.token?._id })
 
 			if (!workDay) {
-				workDay = await WorkDay.create({ date: midnightUnixCode, user: req.token._id })
+				workDay = await WorkDay.create({ date: midnightUnixCode, user: req.token?._id })
 			}
 
 			if (!user.workDays.some((workDayId) => workDayId.equals(workDay?._id))) {
@@ -59,10 +59,10 @@ router.route('/').post(Authenticate, async (req: CustomRequest | any, res: Respo
 				continue
 			}
 
-			let shift = await Shift.findOne({ employee, workDay, user: req.token._id })
+			let shift = await Shift.findOne({ employee, workDay, user: req.token?._id })
 
 			if (!shift) {
-				shift = await Shift.create({ user: req.token._id, employee, workDay, start, end })
+				shift = await Shift.create({ user: req.token?._id, employee, workDay, start, end })
 			}
 
 			shift.end = end

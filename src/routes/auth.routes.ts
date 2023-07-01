@@ -1,20 +1,26 @@
 import express from 'express'
 import User from '../models/User.model'
 import { Request, Response } from 'express'
-import jwt, { Secret, decode } from 'jsonwebtoken'
+import jwt, { decode } from 'jsonwebtoken'
 import { Authenticate } from '../middleware/jwt.middleware'
 
 const router = express.Router()
 
 router.post('/login', async (req: Request, res: Response) => {
 	try {
+		const TOKEN_SECRET: string | undefined = process.env.GOOGLE_CLIENT_SECRET
+
+		if (!TOKEN_SECRET) {
+			return res.status(400).json({ message: 'Token secret is missing.' })
+		}
+
 		const { credential, clientId } = req.body
 
 		if (clientId !== process.env.GOOGLE_CLIENT_ID) {
 			return res.status(401).json({ message: 'Invalid client ID.' })
 		}
 
-		const { name, email, picture }: any = decode(credential)
+		const { name, email }: any = decode(credential)
 
 		let user = await User.findOne({ email })
 
@@ -22,15 +28,9 @@ router.post('/login', async (req: Request, res: Response) => {
 			user = await User.create({ name: name, email: email })
 		}
 
-		const TOKEN_SECRET: Secret | undefined = process.env.GOOGLE_CLIENT_SECRET
-
-		if (!TOKEN_SECRET) {
-			return res.status(400).json({ message: 'Token secret is missing.' })
-		}
-
 		const { _id } = user
 
-		const payload = { _id, name, picture }
+		const payload = { _id, name }
 
 		const token = jwt.sign(payload, TOKEN_SECRET, {
 			algorithm: 'HS256',

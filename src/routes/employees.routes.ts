@@ -2,17 +2,15 @@ import User from '../models/User.model'
 import express, { Request, Response } from 'express'
 import Employee from '../models/Employee.model'
 import { Authenticate } from '../middleware/jwt.middleware'
-import { CustomRequest } from '../middleware/jwt.middleware'
-import WorkDay from '../models/WorkDay.model'
 import Shift from '../models/Shift.model'
 
 const router = express.Router()
 
 router
 	.route('/')
-	.get(Authenticate, async (req: CustomRequest | any, res: Response) => {
+	.get(Authenticate, async (req: Request, res: Response) => {
 		try {
-			const user = await User.findById(req.token._id).populate({
+			const user = await User.findById(req.token?._id).populate({
 				path: 'employees',
 				options: { sort: { name: 1 } },
 			})
@@ -26,11 +24,11 @@ router
 			return res.status(500).json({ message: 'Failed to retrieve employees.', error })
 		}
 	})
-	.post(Authenticate, async (req: CustomRequest | any, res: Response) => {
+	.post(Authenticate, async (req: Request, res: Response) => {
 		try {
 			const { name, email, phone, address } = req.body
 
-			const user = await User.findById(req.token._id)
+			const user = await User.findById(req.token?._id)
 
 			if (!user) {
 				return res.status(401).json({ message: 'User not found.' })
@@ -54,7 +52,7 @@ router
 
 router
 	.route('/notes')
-	.post(Authenticate, async (req: CustomRequest | any, res: Response) => {
+	.post(Authenticate, async (req: Request, res: Response) => {
 		try {
 			const { note, employeeId } = req.body
 
@@ -62,7 +60,7 @@ router
 				return res.status(400).json({ message: 'Note can not be empty.' })
 			}
 
-			const user = await User.findById(req.token._id).populate({
+			const user = await User.findById(req.token?._id).populate({
 				path: 'employees',
 				populate: {
 					path: 'notes',
@@ -89,11 +87,11 @@ router
 			res.status(500).json({ message: 'Internal Server Error.' })
 		}
 	})
-	.put(Authenticate, async (req: CustomRequest | any, res: Response) => {
+	.put(Authenticate, async (req: Request, res: Response) => {
 		try {
 			const { employeeId, index, note } = req.body
 
-			const user = await User.findById(req.token._id).populate({
+			const user = await User.findById(req.token?._id).populate({
 				path: 'employees',
 			})
 
@@ -117,11 +115,13 @@ router
 			return res.status(500).json({ message: 'Internal Server Error.' })
 		}
 	})
-	.delete(Authenticate, async (req: CustomRequest | any, res: Response) => {
+	.delete(Authenticate, async (req: Request, res: Response) => {
 		try {
-			const { employeeId, index } = req.query
+			const { employeeId } = req.query
 
-			const user = await User.findById(req.token._id).populate({
+			const index: any = req.query.index
+
+			const user = await User.findById(req.token?._id).populate({
 				path: 'employees',
 			})
 
@@ -148,7 +148,7 @@ router
 
 router
 	.route('/preferences')
-	.post(Authenticate, async (req: CustomRequest | any, res: Response) => {
+	.post(Authenticate, async (req: Request, res: Response) => {
 		try {
 			const { shiftPreference, employeeId } = req.body
 
@@ -156,7 +156,7 @@ router
 				return res.status(400).json({ message: 'Shift preference can not be empty.' })
 			}
 
-			const user = await User.findById(req.token._id).populate({
+			const user = await User.findById(req.token?._id).populate({
 				path: 'employees',
 				populate: {
 					path: 'shiftPreferences',
@@ -183,11 +183,11 @@ router
 			res.status(500).json({ message: 'Internal Server Error.' })
 		}
 	})
-	.put(Authenticate, async (req: CustomRequest | any, res: Response) => {
+	.put(Authenticate, async (req: Request, res: Response) => {
 		try {
 			const { employeeId, index, shiftPreference } = req.body
 
-			const user = await User.findById(req.token._id).populate({
+			const user = await User.findById(req.token?._id).populate({
 				path: 'employees',
 			})
 
@@ -211,11 +211,13 @@ router
 			return res.status(500).json({ message: 'Internal Server Error.' })
 		}
 	})
-	.delete(Authenticate, async (req: CustomRequest | any, res: Response) => {
+	.delete(Authenticate, async (req: Request, res: Response) => {
 		try {
-			const { employeeId, index } = req.query
+			const { employeeId } = req.query
 
-			const user = await User.findById(req.token._id).populate({
+			const index: any = req.query.index
+
+			const user = await User.findById(req.token?._id).populate({
 				path: 'employees',
 			})
 
@@ -242,7 +244,7 @@ router
 
 router
 	.route('/vacation')
-	.post(Authenticate, async (req: CustomRequest | any, res: Response) => {
+	.post(Authenticate, async (req: Request, res: Response) => {
 		try {
 			const { employeeId, start, end, daysRemaining, daysPlanned } = req.body
 
@@ -250,7 +252,7 @@ router
 				return res.status(400).json({ message: 'Days planned cannot be negative.' })
 			}
 
-			const user = await User.findById(req.token._id).populate({
+			const user = await User.findById(req.token?._id).populate({
 				path: 'employees',
 			})
 
@@ -275,11 +277,11 @@ router
 			return res.status(500).json({ message: 'Internal Server Error.' })
 		}
 	})
-	.put(Authenticate, async (req: CustomRequest | any, res: Response) => {
+	.put(Authenticate, async (req: Request, res: Response) => {
 		try {
 			const { employeeId, amount } = req.body
 
-			const user = await User.findById(req.token._id).populate({
+			const user = await User.findById(req.token?._id).populate({
 				path: 'employees',
 			})
 
@@ -303,11 +305,13 @@ router
 			return res.status(500).json({ message: 'Internal Server Error.' })
 		}
 	})
-	.delete(Authenticate, async (req: CustomRequest | any, res: Response) => {
+	.delete(Authenticate, async (req: Request, res: Response) => {
 		try {
-			const { employeeId, index } = req.query
+			const { employeeId } = req.query
 
-			const user = await User.findById(req.token._id).populate({
+			const index: any = req.query.index
+
+			const user = await User.findById(req.token?._id).populate({
 				path: 'employees',
 			})
 
@@ -341,9 +345,9 @@ router
 
 router
 	.route('/:id')
-	.get(Authenticate, async (req: CustomRequest | any, res: Response) => {
+	.get(Authenticate, async (req: Request, res: Response) => {
 		try {
-			const user = await User.findById(req.token._id).populate('employees')
+			const user = await User.findById(req.token?._id).populate('employees')
 
 			if (!user) {
 				return res.status(404).json({ message: 'User not found.' })
@@ -378,11 +382,11 @@ router
 			res.status(500).json({ message: 'Failed to retrieve employee.' })
 		}
 	})
-	.delete(Authenticate, async (req: CustomRequest | any, res: Response) => {
+	.delete(Authenticate, async (req: Request, res: Response) => {
 		try {
 			const { id } = req.query
 
-			const user = await User.findById(req.token._id)
+			const user = await User.findById(req.token?._id)
 
 			if (!user) {
 				return res.status(404).json({ message: 'User not found.' })
@@ -390,9 +394,9 @@ router
 
 			await Employee.findByIdAndDelete(id)
 
-			await Shift.deleteMany({ user: req.token._id, employee: id })
+			await Shift.deleteMany({ user: req.token?._id, employee: id })
 
-			user.employees = user.employees.filter((employeeId) => employeeId.toString() !== id.toString())
+			user.employees = user.employees.filter((employeeId) => employeeId.toString() !== id?.toString())
 
 			await user.save()
 

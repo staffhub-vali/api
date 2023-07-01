@@ -1,9 +1,9 @@
 import User from '../models/User.model'
 import WorkDay from '../models/WorkDay.model'
 import Shift from '../models/Shift.model'
-import express, { Response } from 'express'
+import express, { Response, Request } from 'express'
 import { Authenticate } from '../middleware/jwt.middleware'
-import { CustomRequest } from '../middleware/jwt.middleware'
+
 import { ObjectId } from 'mongoose'
 
 const router = express.Router()
@@ -22,9 +22,9 @@ interface workDayProps {
 	shifts: ShiftProps[] | unknown[]
 }
 
-router.get('/', Authenticate, async (req: CustomRequest | any, res: Response) => {
+router.get('/', Authenticate, async (req: Request, res: Response) => {
 	try {
-		let { skip } = req.query
+		let { skip } = req.query as any
 		skip = parseInt(skip) || 0
 
 		let nextSkip = 0
@@ -45,14 +45,14 @@ router.get('/', Authenticate, async (req: CustomRequest | any, res: Response) =>
 		const startOfWeek = currentDate - currentDayOfWeek * 24 * 60 * 60 + skip * 7 * 24 * 60 * 60
 		const endOfWeek = startOfWeek + 7 * 24 * 60 * 60
 
-		const user = await User.findOne({ _id: req.token._id })
+		const user = await User.findOne({ _id: req.token?._id })
 
 		if (!user) {
 			return res.status(404).json({ message: 'User not found.' })
 		}
 
 		const workDays = await WorkDay.find({
-			user: req.token._id,
+			user: req.token?._id,
 			date: { $gte: startOfWeek, $lte: endOfWeek },
 		}).populate({
 			path: 'shifts',
@@ -69,7 +69,7 @@ router.get('/', Authenticate, async (req: CustomRequest | any, res: Response) =>
 		const endOfNextWeek = startOfNextWeek + 7 * 24 * 60 * 60
 
 		const workDaysNextWeek = await WorkDay.find({
-			user: req.token._id,
+			user: req.token?._id,
 			date: { $gte: startOfNextWeek, $lte: endOfNextWeek },
 		})
 
@@ -82,7 +82,7 @@ router.get('/', Authenticate, async (req: CustomRequest | any, res: Response) =>
 
 router
 	.route('/notes')
-	.post(Authenticate, async (req: CustomRequest | any, res: Response) => {
+	.post(Authenticate, async (req: Request, res: Response) => {
 		try {
 			const { day, note } = req.body
 
@@ -90,7 +90,7 @@ router
 				return res.status(400).json({ message: 'Cannot create empty notes.' })
 			}
 
-			const user = await User.findOne({ _id: req.token._id }).populate({
+			const user = await User.findOne({ _id: req.token?._id }).populate({
 				path: 'workDays',
 				populate: {
 					path: 'notes',
@@ -117,11 +117,11 @@ router
 			res.status(500).json({ message: 'Interal Server Error' })
 		}
 	})
-	.put(Authenticate, async (req: CustomRequest | any, res: Response) => {
+	.put(Authenticate, async (req: Request, res: Response) => {
 		try {
 			const { note, index, workDayId } = req.body
 
-			const user = await User.findById(req.token._id).populate({
+			const user = await User.findById(req.token?._id).populate({
 				path: 'workDays',
 				populate: {
 					path: 'notes',
@@ -148,11 +148,13 @@ router
 			res.status(500).json({ message: 'Internal Server Error' })
 		}
 	})
-	.delete(Authenticate, async (req: CustomRequest | any, res: Response) => {
+	.delete(Authenticate, async (req: Request, res: Response) => {
 		try {
-			const { workDay: id, index } = req.query
+			const { workDay: id } = req.query
 
-			const user = await User.findById(req.token._id).populate({
+			const index: any = req.query.index
+
+			const user = await User.findById(req.token?._id).populate({
 				path: 'workDays',
 				populate: {
 					path: 'notes',
@@ -182,9 +184,9 @@ router
 
 router
 	.route('/:id')
-	.get(Authenticate, async (req: CustomRequest | any, res: Response) => {
+	.get(Authenticate, async (req: Request, res: Response) => {
 		try {
-			const user = await User.findById(req.token._id).populate({
+			const user = await User.findById(req.token?._id).populate({
 				path: 'workDays',
 				populate: {
 					path: 'shifts',
@@ -210,11 +212,11 @@ router
 			res.status(500).json({ message: 'Interal Server Error' })
 		}
 	})
-	.put(Authenticate, async (req: CustomRequest | any, res: Response) => {
+	.put(Authenticate, async (req: Request, res: Response) => {
 		try {
 			const { _id: workDayId, shifts } = req.body
 
-			const user = await User.findById(req.token._id).populate({
+			const user = await User.findById(req.token?._id).populate({
 				path: 'workDays',
 				populate: {
 					path: 'shifts',
@@ -245,11 +247,11 @@ router
 			res.status(500).json({ message: 'Internal Server Error' })
 		}
 	})
-	.delete(Authenticate, async (req: CustomRequest | any, res: Response) => {
+	.delete(Authenticate, async (req: Request, res: Response) => {
 		try {
 			const { shiftId, workDayId } = req.query
 
-			const user = await User.findById(req.token._id).populate({
+			const user = await User.findById(req.token?._id).populate({
 				path: 'workDays',
 				populate: {
 					path: 'shifts',
@@ -266,7 +268,7 @@ router
 				return res.status(404).json({ message: 'Work day not found.' })
 			}
 
-			await Shift.findOneAndDelete({ user: req.token._id, _id: shiftId })
+			await Shift.findOneAndDelete({ user: req.token?._id, _id: shiftId })
 
 			const shiftIndex = workDay.shifts.findIndex((shift: any) => shift._id.toString() === shiftId)
 
